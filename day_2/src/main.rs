@@ -8,7 +8,6 @@ fn main() {
     println!("Part One answer is: {part_one_answer}"); // 12586854255
 }
 
-// will probably need to increase to a u64
 fn part_one_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
     id_ranges.iter_mut().fold(0, |acc, id_range| {
         let mut range_acc = 0;
@@ -23,11 +22,6 @@ fn part_one_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
 
         acc + range_acc
     })
-    // for each range
-    // for each number
-    // convert to string, split on (char length / 2)
-    // check if the first part matches the second part (probs do array comp here?)
-    // if match then return
 }
 
 fn process_input(input: &str) -> Vec<RangeInclusive<u64>> {
