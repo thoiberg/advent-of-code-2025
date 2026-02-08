@@ -12,26 +12,19 @@ fn main() {
     println!("The Part Two Answer is {part_two_answer}"); // 5872
 }
 
-fn part_one_solution(instructions: &[Instruction]) -> usize {
+fn part_one_solution(instructions: &[Instruction]) -> i32 {
     let mut current_position: i32 = 50;
 
-    let positions: Vec<i32> = instructions
-        .iter()
-        .map(|instruction| match instruction.direction {
-            Direction::Left => {
-                let new_pos = (current_position - instruction.steps) % 100;
+    instructions.iter().fold(0, |acc, instruction| {
+        let movement = match instruction.direction {
+            Direction::Left => current_position - instruction.steps,
+            Direction::Right => current_position + instruction.steps,
+        };
 
-                current_position = if new_pos < 0 { 100 + new_pos } else { new_pos };
-                current_position
-            }
-            Direction::Right => {
-                current_position = (current_position + instruction.steps) % 100;
-                current_position
-            }
-        })
-        .collect();
+        current_position = movement.rem_euclid(100);
 
-    positions.into_iter().filter(|pos| pos == &0).count()
+        if current_position == 0 { acc + 1 } else { acc }
+    })
 }
 
 fn part_two_solution(instructions: &[Instruction]) -> i32 {
@@ -39,29 +32,31 @@ fn part_two_solution(instructions: &[Instruction]) -> i32 {
 
     let crossing_zeros: Vec<i32> = instructions
         .iter()
-        .map(|instruction| match instruction.direction {
-            Direction::Left => {
-                let mut crossing_zero = instruction.steps / 100;
-                let new_pos = current_position - (instruction.steps % 100);
+        .map(|instruction| {
+            let mut crossing_zero = instruction.steps / 100;
 
-                if current_position != 0 && new_pos <= 0 {
-                    crossing_zero += 1;
+            match instruction.direction {
+                Direction::Left => {
+                    let new_pos = current_position - (instruction.steps % 100);
+
+                    if current_position != 0 && new_pos <= 0 {
+                        crossing_zero += 1;
+                    }
+
+                    current_position = if new_pos < 0 { 100 + new_pos } else { new_pos };
+
+                    crossing_zero
                 }
+                Direction::Right => {
+                    let new_pos = current_position + (instruction.steps % 100);
 
-                current_position = if new_pos < 0 { 100 + new_pos } else { new_pos };
+                    if current_position != 0 && new_pos >= 100 {
+                        crossing_zero += 1;
+                    }
+                    current_position = new_pos % 100;
 
-                crossing_zero
-            }
-            Direction::Right => {
-                let mut crossing_zero = instruction.steps / 100;
-                let new_pos = current_position + (instruction.steps % 100);
-
-                if current_position != 0 && new_pos >= 100 {
-                    crossing_zero += 1;
+                    crossing_zero
                 }
-                current_position = new_pos % 100;
-
-                crossing_zero
             }
         })
         .collect();
