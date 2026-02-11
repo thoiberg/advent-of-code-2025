@@ -5,7 +5,10 @@ fn main() {
     let id_ranges = process_input(&puzzle_data);
 
     let part_one_answer = part_one_solution(&mut id_ranges.clone());
-    println!("Part One answer is: {part_one_answer}"); // 12586854255
+    println!("Part One answer is: {part_one_answer}"); // 12,586,854,255
+
+    let part_two_answer = part_two_solution(&mut id_ranges.clone());
+    println!("Part Two answer is: {part_two_answer}"); // 17,298,174,201
 }
 
 fn part_one_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
@@ -17,6 +20,35 @@ fn part_one_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
 
             if first_half == second_half {
                 range_acc += i;
+            }
+        }
+
+        acc + range_acc
+    })
+}
+
+fn part_two_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
+    id_ranges.iter_mut().fold(0, |acc, id_range| {
+        let mut range_acc = 0;
+        for i in id_range {
+            let number_str = i.to_string();
+            let number_chars: Vec<char> = number_str.chars().collect();
+            let number_char_length = number_chars.len();
+
+            for j in 1..=(number_char_length / 2) {
+                if number_char_length % j != 0 {
+                    continue;
+                }
+
+                let chunks: Vec<&[char]> = number_chars.chunks(j).collect();
+
+                let first_chunk = chunks[0];
+                let have_pattern = chunks.into_iter().all(|chunk| chunk == first_chunk);
+
+                if have_pattern {
+                    range_acc += i;
+                    break;
+                }
             }
         }
 
@@ -67,5 +99,12 @@ mod test_super {
         let mut example_data = test_data();
 
         assert_eq!(part_one_solution(&mut example_data), 1227775554);
+    }
+
+    #[test]
+    fn test_part_two_example() {
+        let mut example_data = test_data();
+
+        assert_eq!(part_two_solution(&mut example_data), 4174379265);
     }
 }
