@@ -1,5 +1,7 @@
 use std::{fs::read_to_string, ops::RangeInclusive};
 
+use fancy_regex::Regex;
+
 fn main() {
     let puzzle_data = read_to_string("./puzzle_input.txt").unwrap();
     let id_ranges = process_input(&puzzle_data);
@@ -9,6 +11,9 @@ fn main() {
 
     let part_two_answer = part_two_solution(&mut id_ranges.clone());
     println!("Part Two answer is: {part_two_answer}"); // 17,298,174,201
+
+    // let part_two_answer_regex = part_two_solution_regex(&mut id_ranges.clone());
+    // println!("Part Two answer is: {part_two_answer_regex}"); // 17,298,174,201
 }
 
 fn part_one_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
@@ -28,10 +33,17 @@ fn part_one_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
 }
 
 fn part_two_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
+    // let expr = Regex::new(r"^(\d+)\1+$").unwrap();
+
     id_ranges.iter_mut().fold(0, |acc, id_range| {
         let mut range_acc = 0;
         for id in id_range {
+            // let number_str = id.to_string();
             let number_chars: Vec<char> = id.to_string().chars().collect();
+
+            // if expr.is_match(&number_str).unwrap() {
+            //     range_acc += id
+            // }
             let number_char_length = number_chars.len();
 
             for chunk_size in 1..=(number_char_length / 2) {
@@ -47,6 +59,24 @@ fn part_two_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
                     range_acc += id;
                     break;
                 }
+            }
+        }
+
+        acc + range_acc
+    })
+}
+
+#[allow(dead_code)]
+fn part_two_solution_regex(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
+    let expr = Regex::new(r"^(\d+)\1+$").unwrap();
+
+    id_ranges.iter_mut().fold(0, |acc, id_range| {
+        let mut range_acc = 0;
+        for id in id_range {
+            let number_str = id.to_string();
+
+            if expr.is_match(&number_str).unwrap() {
+                range_acc += id
             }
         }
 
