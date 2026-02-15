@@ -30,23 +30,21 @@ fn part_one_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
 fn part_two_solution(id_ranges: &mut [RangeInclusive<u64>]) -> u64 {
     id_ranges.iter_mut().fold(0, |acc, id_range| {
         let mut range_acc = 0;
-        for i in id_range {
-            let number_str = i.to_string();
-            let number_chars: Vec<char> = number_str.chars().collect();
+        for id in id_range {
+            let number_chars: Vec<char> = id.to_string().chars().collect();
             let number_char_length = number_chars.len();
 
-            for j in 1..=(number_char_length / 2) {
-                if number_char_length % j != 0 {
+            for chunk_size in 1..=(number_char_length / 2) {
+                if !number_char_length.is_multiple_of(chunk_size) {
                     continue;
                 }
 
-                let chunks: Vec<&[char]> = number_chars.chunks(j).collect();
-
+                let chunks: Vec<&[char]> = number_chars.chunks(chunk_size).collect();
                 let first_chunk = chunks[0];
                 let have_pattern = chunks.into_iter().all(|chunk| chunk == first_chunk);
 
                 if have_pattern {
-                    range_acc += i;
+                    range_acc += id;
                     break;
                 }
             }
