@@ -1,17 +1,17 @@
 use std::fs::read_to_string;
 
-type Voltages = Vec<Vec<u32>>;
+type BatteryBanks = Vec<Vec<u32>>;
 
 fn main() {
     let puzzle_input = read_to_string("./puzzle_input.txt").unwrap();
-    let voltages = process_input(&puzzle_input);
+    let battery_banks = process_input(&puzzle_input);
 
-    let part_one_answer = part_one_solution(&voltages);
+    let part_one_answer = part_one_solution(&battery_banks);
     println!("Part One answer is: {part_one_answer}"); // 17,092
 }
 
-fn part_one_solution(voltages: &Voltages) -> u32 {
-    voltages
+fn part_one_solution(battery_banks: &BatteryBanks) -> u32 {
+    battery_banks
         .iter()
         .fold(0, |acc, voltage| acc + max_joltage(voltage))
 }
@@ -33,7 +33,7 @@ fn max_joltage(battery_bank: &[u32]) -> u32 {
     first * 10 + second
 }
 
-fn process_input(input: &str) -> Voltages {
+fn process_input(input: &str) -> BatteryBanks {
     input
         .lines()
         .map(|line| {
@@ -50,7 +50,7 @@ mod test_super {
 
     use super::*;
 
-    fn test_input() -> Voltages {
+    fn test_input() -> BatteryBanks {
         let example_text = read_to_string("./example.txt").unwrap();
 
         process_input(&example_text)
