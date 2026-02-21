@@ -8,6 +8,9 @@ fn main() {
 
     let part_one_answer = part_one_solution(&battery_banks);
     println!("Part One answer is: {part_one_answer}"); // 17,092
+
+    let part_two_answer = part_two_solution(&battery_banks);
+    println!("Part Two answer is: {part_two_answer}"); // 170,147,128,753,455
 }
 
 fn part_one_solution(battery_banks: &BatteryBanks) -> u32 {
@@ -31,6 +34,50 @@ fn max_joltage(battery_bank: &[u32]) -> u32 {
     }
 
     first * 10 + second
+}
+
+fn part_two_solution(battery_banks: &BatteryBanks) -> u64 {
+    let mut total_voltage = 0;
+
+    for batteries in battery_banks {
+        let max_jolts = part_two_max_jolt(batteries, 0, 12, vec![]);
+        let max_jolt_num = max_jolts
+            .iter()
+            .rev()
+            .enumerate()
+            .fold(0, |acc, (i, volt)| {
+                acc + (*volt as u64) * 10u64.pow(i.try_into().unwrap())
+            });
+
+        total_voltage += max_jolt_num;
+    }
+
+    total_voltage
+}
+
+fn part_two_max_jolt(
+    batteries: &[u32],
+    max_bound: usize,
+    digit_to_find: usize,
+    mut max_jolts: Vec<u32>,
+) -> Vec<u32> {
+    if digit_to_find == 0 {
+        return max_jolts;
+    };
+
+    let upper_bound = batteries.len() - digit_to_find;
+    let lower_bound = max_bound;
+    // find the next subslice and call
+    let valid_digits = &batteries[lower_bound..=upper_bound];
+    // get the position of the array
+    let max = valid_digits.iter().max().unwrap();
+    // This _should_be ok because if there are multiple numbers we always want to take the one to the left
+    let max_pos = valid_digits.iter().position(|x| x == max).unwrap();
+    let next_max_bound = max_bound + max_pos + 1;
+
+    max_jolts.push(*max);
+
+    part_two_max_jolt(batteries, next_max_bound, digit_to_find - 1, max_jolts)
 }
 
 fn process_input(input: &str) -> BatteryBanks {
@@ -78,5 +125,39 @@ mod test_super {
     fn test_max_voltage() {
         let voltage = vec![9, 9, 8];
         assert_eq!(max_joltage(&voltage), 99);
+    }
+
+    #[test]
+    fn test_part_two_max_jolt() {
+        let battery_bank = vec![9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1, 1, 1, 1];
+
+        let max_jolt = part_two_max_jolt(&battery_bank, 0, 12, vec![]);
+
+        assert_eq!(max_jolt, vec![9, 8, 7, 6, 5, 4, 3, 2, 1, 1, 1, 1]);
+
+        let battery_bank = vec![2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 3, 4, 2, 7, 8];
+
+        let max_jolt = part_two_max_jolt(&battery_bank, 0, 12, vec![]);
+
+        assert_eq!(max_jolt, vec![4, 3, 4, 2, 3, 4, 2, 3, 4, 2, 7, 8]);
+
+        let battery_bank = vec![8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9];
+
+        let max_jolt = part_two_max_jolt(&battery_bank, 0, 12, vec![]);
+
+        assert_eq!(max_jolt, vec![8, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 9]);
+
+        let battery_bank = vec![8, 1, 8, 1, 8, 1, 9, 1, 1, 1, 1, 2, 1, 1, 1];
+
+        let max_jolt = part_two_max_jolt(&battery_bank, 0, 12, vec![]);
+
+        assert_eq!(max_jolt, vec![8, 8, 8, 9, 1, 1, 1, 1, 2, 1, 1, 1]);
+    }
+
+    #[test]
+    fn test_part_two_solution_example() {
+        let voltages = test_input();
+
+        assert_eq!(part_two_solution(&voltages), 3_121_910_778_619);
     }
 }
