@@ -6,26 +6,39 @@ fn main() {
     let puzzle_input = read_to_string("./puzzle_input.txt").unwrap();
     let floor_map = process_input(&puzzle_input);
 
-    let part_one_answer = part_one_solution(&floor_map);
+    let part_one_answer = part_one_solution(&floor_map); // 1433
     println!("Part One answer is {part_one_answer}");
+
+    let part_two_answer = part_two_solution(floor_map.clone());
+    println!("Part Two answer is {part_two_answer}");
 }
 
-fn part_one_solution(floor_map: &Array2<Position>) -> u32 {
-    // get the coords for the (at most) 8 surrounding elements
-    // get the values of the elements
-    // sum them if they are Position::PaperRoll
-    // if greater than 4 then return
-    // for ((y, x), position) in floor_map.indexed_iter() {
-    //     if position == &Position::Empty {
-    //         continue;
-    //     }
+fn part_one_solution(floor_map: &Array2<Position>) -> usize {
+    positions_with_enough_space(floor_map).len()
+}
 
-    // }
+fn part_two_solution(mut floor_map: Array2<Position>) -> usize {
+    //
+    let mut movable_rolls = positions_with_enough_space(&floor_map);
+    let mut total_rolls_removed = movable_rolls.len();
 
+    while !movable_rolls.is_empty() {
+        movable_rolls.iter().for_each(|(y, x)| {
+            floor_map[[*y, *x]] = Position::Empty;
+        });
+
+        movable_rolls = positions_with_enough_space(&floor_map);
+        total_rolls_removed += movable_rolls.len();
+    }
+
+    total_rolls_removed
+}
+
+fn positions_with_enough_space(floor_map: &Array2<Position>) -> Vec<(usize, usize)> {
     floor_map
         .indexed_iter()
         .filter(|(_, pos)| pos == &&Position::PaperRoll)
-        .fold(0, |acc, ((y, x), _)| {
+        .filter_map(|((y, x), _)| {
             let surrounding_positions: Vec<_> = get_surrounding_positions(y, x)
                 .into_iter()
                 .filter_map(|new_coord| floor_map.get(new_coord))
@@ -39,8 +52,13 @@ fn part_one_solution(floor_map: &Array2<Position>) -> u32 {
                 }
             });
 
-            if paper_roll_tiles < 4 { acc + 1 } else { acc }
+            if paper_roll_tiles < 4 {
+                Some((y, x))
+            } else {
+                None
+            }
         })
+        .collect()
 }
 
 fn get_surrounding_positions(y: usize, x: usize) -> Vec<(usize, usize)> {
@@ -70,7 +88,7 @@ fn get_surrounding_positions(y: usize, x: usize) -> Vec<(usize, usize)> {
         .collect()
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 enum Position {
     Empty,
     PaperRoll,
@@ -145,5 +163,12 @@ mod test_super {
         let valid_tiles = part_one_solution(&test_data);
 
         assert_eq!(valid_tiles, 13);
+    }
+
+    #[test]
+    fn test_part_two_solution_example() {
+        let moved_rolls = part_two_solution(test_data());
+
+        assert_eq!(moved_rolls, 43);
     }
 }
