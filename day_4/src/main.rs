@@ -1,4 +1,4 @@
-use std::{fs::read_to_string, str::FromStr};
+use std::fs::read_to_string;
 
 use ndarray::Array2;
 
@@ -18,13 +18,12 @@ fn part_one_solution(floor_map: &Array2<Position>) -> usize {
 }
 
 fn part_two_solution(mut floor_map: Array2<Position>) -> usize {
-    //
     let mut movable_rolls = positions_with_enough_space(&floor_map);
     let mut total_rolls_removed = movable_rolls.len();
 
     while !movable_rolls.is_empty() {
-        movable_rolls.iter().for_each(|(y, x)| {
-            floor_map[[*y, *x]] = Position::Empty;
+        movable_rolls.into_iter().for_each(|(y, x)| {
+            floor_map[[y, x]] = Position::Empty;
         });
 
         movable_rolls = positions_with_enough_space(&floor_map);
@@ -94,46 +93,28 @@ enum Position {
     PaperRoll,
 }
 
-impl TryFrom<char> for Position {
-    type Error = ();
-
-    fn try_from(value: char) -> Result<Self, Self::Error> {
+impl From<char> for Position {
+    fn from(value: char) -> Self {
         match value {
-            '.' => Ok(Self::Empty),
-            '@' => Ok(Self::PaperRoll),
-            _ => Err(()),
-        }
-    }
-}
-
-impl FromStr for Position {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "." => Ok(Self::Empty),
-            "@" => Ok(Self::PaperRoll),
-            _ => Err(()),
+            '.' => Self::Empty,
+            '@' => Self::PaperRoll,
+            x => panic!("Expected either . or @, got: {}", x),
         }
     }
 }
 
 fn process_input(input: &str) -> ndarray::Array2<Position> {
-    let boop: Vec<Vec<Position>> = input
+    let positions: Vec<Vec<Position>> = input
         .lines()
-        .map(|line| {
-            line.chars()
-                .map(|position| position.try_into().unwrap())
-                .collect()
-        })
+        .map(|line| line.chars().map(|position| position.into()).collect())
         .collect();
 
-    let rows = boop.len();
-    let columns = boop[0].len();
+    let rows = positions.len();
+    let columns = positions[0].len();
 
-    let boop = boop.into_iter().flatten().collect();
+    let positions = positions.into_iter().flatten().collect();
 
-    Array2::from_shape_vec((rows, columns), boop).unwrap()
+    Array2::from_shape_vec((rows, columns), positions).unwrap()
 }
 
 #[cfg(test)]
